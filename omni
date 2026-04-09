@@ -10,7 +10,6 @@ function Omni.new()
     if CoreGui:FindFirstChild("Omni_UI") then CoreGui.Omni_UI:Destroy() end
     self.Gui = Instance.new("ScreenGui", CoreGui)
     self.Gui.Name = "Omni_UI"
-    self.Minimized = false
     return self
 end
 
@@ -20,7 +19,6 @@ function Omni:CreateWindow(title)
     Main.Position = UDim2.new(0.5, -260, 0.5, -200)
     Main.BackgroundColor3 = Color3.fromRGB(240, 242, 245)
     Main.BorderSizePixel = 0
-    Main.ClipsDescendants = true
     Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 14)
 
     local Topbar = Instance.new("Frame", Main)
@@ -30,7 +28,7 @@ function Omni:CreateWindow(title)
     Instance.new("UICorner", Topbar).CornerRadius = UDim.new(0, 10)
 
     local TitleLabel = Instance.new("TextLabel", Topbar)
-    TitleLabel.Size = UDim2.new(0.5, 0, 1, 0)
+    TitleLabel.Size = UDim2.new(1, 0, 1, 0)
     TitleLabel.Position = UDim2.fromOffset(12, 0)
     TitleLabel.Text = title
     TitleLabel.Font = Enum.Font.GothamMedium
@@ -58,8 +56,8 @@ function Omni:CreateWindow(title)
     end
 
     CreateControl("-", 0.3, function() 
-        self.Minimized = not self.Minimized
-        TweenService:Create(Main, TweenInfo.new(0.3), {Size = self.Minimized and UDim2.fromOffset(520, 55) or UDim2.fromOffset(520, 400)}):Play()
+        local isMin = Main.Size.Y.Offset < 60
+        TweenService:Create(Main, TweenInfo.new(0.3), {Size = isMin and UDim2.fromOffset(520, 400) or UDim2.fromOffset(520, 55)}):Play()
     end)
     CreateControl("×", 0.8, function() self.Gui:Destroy() end)
 
@@ -101,12 +99,10 @@ function Omni:CreateWindow(title)
         Page.Position = UDim2.fromOffset(10, 10)
         Page.BackgroundTransparency = 1
         Page.Visible = false
-        Page.ScrollBarThickness = 3
+        Page.ScrollBarThickness = 0
         Page.CanvasSize = UDim2.new(0,0,0,0)
         Page.AutomaticCanvasSize = Enum.AutomaticSize.Y
-        local Layout = Instance.new("UIListLayout", Page)
-        Layout.Padding = UDim.new(0, 8)
-        Layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+        Instance.new("UIListLayout", Page).Padding = UDim.new(0, 8)
         
         local TabBtn = Instance.new("TextButton", Sidebar)
         TabBtn.Size = UDim2.new(0, 85, 0, 35)
@@ -190,45 +186,6 @@ function Omni:CreateWindow(title)
                     update(input)
                 end
             end)
-        end
-
-        function PageElements:Dropdown(text, list, cb)
-            local DFrame = Instance.new("Frame", Page)
-            DFrame.Size = UDim2.new(1, 0, 0, 38)
-            DFrame.BackgroundColor3 = Color3.fromRGB(210, 213, 217)
-            DFrame.ClipsDescendants = true
-            Instance.new("UICorner", DFrame).CornerRadius = UDim.new(0, 10)
-            
-            local DBtn = Instance.new("TextButton", DFrame)
-            DBtn.Size = UDim2.new(1, 0, 0, 38)
-            DBtn.BackgroundTransparency = 1
-            DBtn.Text = text:lower() .. "  ▼"
-            DBtn.Font = Enum.Font.Gotham
-            DBtn.TextColor3 = Color3.fromRGB(60, 60, 60)
-            
-            local open = false
-            DBtn.MouseButton1Click:Connect(function()
-                open = not open
-                DFrame.Size = open and UDim2.new(1, 0, 0, 38 + (#list * 32)) or UDim2.new(1, 0, 0, 38)
-            end)
-
-            for i, val in pairs(list) do
-                local opt = Instance.new("TextButton", DFrame)
-                opt.Size = UDim2.new(1, -10, 0, 28)
-                opt.Position = UDim2.new(0, 5, 0, 38 + ((i - 1) * 32))
-                opt.Text = tostring(val)
-                opt.BackgroundColor3 = Color3.fromRGB(195, 198, 202)
-                opt.Font = Enum.Font.Gotham
-                opt.TextSize = 12
-                opt.TextColor3 = Color3.fromRGB(60,60,60)
-                Instance.new("UICorner", opt).CornerRadius = UDim.new(0, 6)
-                opt.MouseButton1Click:Connect(function()
-                    DBtn.Text = text:lower() .. ": " .. tostring(val)
-                    cb(val)
-                    open = false
-                    DFrame.Size = UDim2.new(1, 0, 0, 38)
-                end)
-            end
         end
 
         return PageElements
