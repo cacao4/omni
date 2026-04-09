@@ -34,7 +34,7 @@ function Omni:Notify(title, text, duration)
     local t = Instance.new("TextLabel", n)
     t.Size = UDim2.new(1, -20, 0, 20)
     t.Position = UDim2.fromOffset(10, 8)
-    t.Text = title:lower()
+    t.Text = tostring(title):lower()
     t.Font = Enum.Font.GothamBold
     t.TextColor3 = Color3.fromRGB(60, 65, 70)
     t.TextSize = 13
@@ -44,7 +44,7 @@ function Omni:Notify(title, text, duration)
     local d = Instance.new("TextLabel", n)
     d.Size = UDim2.new(1, -20, 0, 20)
     d.Position = UDim2.fromOffset(10, 28)
-    d.Text = text:lower()
+    d.Text = tostring(text):lower()
     d.Font = Enum.Font.Gotham
     d.TextColor3 = Color3.fromRGB(100, 105, 110)
     d.TextSize = 12
@@ -53,9 +53,11 @@ function Omni:Notify(title, text, duration)
 
     TweenService:Create(n, TweenInfo.new(0.4, Enum.EasingStyle.Back), {Position = UDim2.new(0, 0, 0, 0)}):Play()
     task.delay(duration or 3, function()
-        TweenService:Create(n, TweenInfo.new(0.4), {Position = UDim2.new(1.5, 0, 0, 0)}):Play()
-        task.wait(0.5)
-        n:Destroy()
+        if n then
+            TweenService:Create(n, TweenInfo.new(0.4), {Position = UDim2.new(1.5, 0, 0, 0)}):Play()
+            task.wait(0.5)
+            n:Destroy()
+        end
     end)
 end
 
@@ -125,7 +127,6 @@ function Omni:CreateWindow(title)
     Container.Size = UDim2.new(0, 380, 0, 325)
     Container.Position = UDim2.fromOffset(12, 60)
     Container.BackgroundColor3 = Color3.fromRGB(225, 228, 232)
-    Container.Active = true
     Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 10)
 
     local Sidebar = Instance.new("Frame", Main)
@@ -151,7 +152,11 @@ function Omni:CreateWindow(title)
         Page.ScrollBarThickness = 0
         Page.CanvasSize = UDim2.new(0,0,0,0)
         Page.AutomaticCanvasSize = Enum.AutomaticSize.Y
-        Instance.new("UIListLayout", Page).Padding = UDim.new(0, 8)
+        
+        -- Layout to prevent elements from overlapping
+        local Layout = Instance.new("UIListLayout", Page)
+        Layout.Padding = UDim.new(0, 8)
+        Layout.SortOrder = Enum.SortOrder.LayoutOrder
         
         local TabBtn = Instance.new("TextButton", Sidebar)
         TabBtn.Size = UDim2.new(0, 85, 0, 35)
@@ -183,6 +188,61 @@ function Omni:CreateWindow(title)
             B.MouseButton1Click:Connect(cb)
         end
 
+        function PageElements:Slider(text, min, max, default, cb)
+            local SFrame = Instance.new("Frame", Page)
+            SFrame.Size = UDim2.new(1, 0, 0, 48)
+            SFrame.BackgroundColor3 = Color3.fromRGB(210, 213, 217)
+            Instance.new("UICorner", SFrame).CornerRadius = UDim.new(0, 10)
+            
+            local Title = Instance.new("TextLabel", SFrame)
+            Title.Position = UDim2.new(0, 12, 0, 8)
+            Title.Size = UDim2.new(1, -50, 0, 12)
+            Title.Text = text:lower()
+            Title.Font = Enum.Font.Gotham
+            Title.TextColor3 = Color3.fromRGB(80, 80, 80)
+            Title.TextSize = 12
+            Title.BackgroundTransparency = 1
+            Title.TextXAlignment = 0
+
+            local ValLabel = Instance.new("TextLabel", SFrame)
+            ValLabel.Position = UDim2.new(1, -40, 0, 8)
+            ValLabel.Size = UDim2.new(0, 30, 0, 12)
+            ValLabel.Text = tostring(default)
+            ValLabel.Font = Enum.Font.GothamBold
+            ValLabel.TextColor3 = Color3.fromRGB(100, 100, 100)
+            ValLabel.TextSize = 12
+            ValLabel.BackgroundTransparency = 1
+            ValLabel.TextXAlignment = 1
+            
+            local Bar = Instance.new("Frame", SFrame)
+            Bar.Size = UDim2.new(1, -24, 0, 6)
+            Bar.Position = UDim2.new(0, 12, 0, 32)
+            Bar.BackgroundColor3 = Color3.fromRGB(180, 185, 190)
+            Instance.new("UICorner", Bar).CornerRadius = UDim.new(0, 4)
+            
+            local Fill = Instance.new("Frame", Bar)
+            Fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
+            Fill.BackgroundColor3 = Color3.fromRGB(120, 130, 140)
+            Instance.new("UICorner", Fill).CornerRadius = UDim.new(0, 4)
+
+            local function update(input)
+                local pos = math.clamp((input.Position.X - Bar.AbsolutePosition.X) / Bar.AbsoluteSize.X, 0, 1)
+                Fill.Size = UDim2.new(pos, 0, 1, 0)
+                local val = math.floor(min + (max - min) * pos)
+                ValLabel.Text = tostring(val)
+                cb(val)
+            end
+
+            Bar.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    local connection; connection = UIS.InputChanged:Connect(function(move)
+                        if UIS:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then update(move) else connection:Disconnect() end
+                    end)
+                    update(input)
+                end
+            end)
+        end
+
         function PageElements:Dropdown(text, list, cb)
             local DropFrame = Instance.new("Frame", Page)
             DropFrame.Size = UDim2.new(1, 0, 0, 38)
@@ -199,10 +259,10 @@ function Omni:CreateWindow(title)
             MainBtn.TextSize = 13
             
             local ItemList = Instance.new("Frame", DropFrame)
-            ItemList.Size = UDim2.new(1, 0, 0, 0)
+            ItemList.Size = UDim2.new(1, 0, 1, -38)
             ItemList.Position = UDim2.fromOffset(0, 38)
             ItemList.BackgroundTransparency = 1
-            local Layout = Instance.new("UIListLayout", ItemList)
+            Instance.new("UIListLayout", ItemList)
             
             local open = false
             MainBtn.MouseButton1Click:Connect(function()
