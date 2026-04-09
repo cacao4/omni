@@ -19,7 +19,7 @@ function Omni:CreateWindow(title)
     Main.Position = UDim2.new(0.5, -260, 0.5, -200)
     Main.BackgroundColor3 = Color3.fromRGB(240, 242, 245)
     Main.BorderSizePixel = 0
-    Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
+    Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 14)
 
     local Topbar = Instance.new("Frame", Main)
     Topbar.Size = UDim2.new(1, -24, 0, 35)
@@ -51,7 +51,7 @@ function Omni:CreateWindow(title)
         btn.TextColor3 = Color3.fromRGB(80, 85, 90)
         btn.Font = Enum.Font.GothamBold
         btn.TextSize = 16
-        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 8)
+        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
         btn.MouseButton1Click:Connect(callback)
     end
 
