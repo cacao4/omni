@@ -1,0 +1,207 @@
+local OmniLib = {}
+OmniLib.__index = OmniLib
+
+local CoreGui = game:GetService("CoreGui")
+local UIS = game:GetService("UserInputService")
+
+function OmniLib.new()
+    local self = setmetatable({}, OmniLib)
+    
+    -- Cleanup old UI if it exists
+    if CoreGui:FindFirstChild("Omni_UI") then 
+        CoreGui.Omni_UI:Destroy() 
+    end
+
+    self.Gui = Instance.new("ScreenGui")
+    self.Gui.Name = "Omni_UI"
+    self.Gui.Parent = CoreGui
+    self.Gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+    return self
+end
+
+function OmniLib:CreateWindow(title)
+    local Main = Instance.new("Frame", self.Gui)
+    Main.Size = UDim2.fromOffset(520, 380)
+    Main.Position = UDim2.new(0.5, -260, 0.5, -190)
+    Main.BackgroundColor3 = Color3.fromRGB(245, 245, 245)
+    Main.BorderSizePixel = 0
+    Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
+
+    -- Topbar (The only draggable area)
+    local Topbar = Instance.new("Frame", Main)
+    Topbar.Size = UDim2.new(1, -24, 0, 32)
+    Topbar.Position = UDim2.fromOffset(12, 12)
+    Topbar.BackgroundColor3 = Color3.fromRGB(210, 215, 218)
+    Instance.new("UICorner", Topbar).CornerRadius = UDim.new(0, 8)
+
+    local TitleLabel = Instance.new("TextLabel", Topbar)
+    TitleLabel.Size = UDim2.new(1, -12, 1, 0)
+    TitleLabel.Position = UDim2.fromOffset(12, 0)
+    TitleLabel.Text = title
+    TitleLabel.Font = Enum.Font.Gotham
+    TitleLabel.TextColor3 = Color3.fromRGB(50, 55, 60)
+    TitleLabel.TextSize = 15
+    TitleLabel.TextXAlignment = 0
+    TitleLabel.BackgroundTransparency = 1
+
+    -- Dragging Logic
+    local dragging, dragInput, dragStart, startPos
+    Topbar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true; dragStart = input.Position; startPos = Main.Position
+        end
+    end)
+    UIS.InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStart
+            Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+    UIS.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
+
+    -- Content Area
+    local Container = Instance.new("Frame", Main)
+    Container.Size = UDim2.new(0, 380, 0, 310)
+    Container.Position = UDim2.fromOffset(12, 56)
+    Container.BackgroundColor3 = Color3.fromRGB(225, 228, 230)
+    Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 12)
+
+    -- Sidebar Area
+    local Sidebar = Instance.new("Frame", Main)
+    Sidebar.Size = UDim2.new(0, 104, 0, 310)
+    Sidebar.Position = UDim2.fromOffset(404, 56)
+    Sidebar.BackgroundColor3 = Color3.fromRGB(225, 228, 230)
+    Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 12)
+
+    local SidebarList = Instance.new("UIListLayout", Sidebar)
+    SidebarList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    SidebarList.Padding = UDim.new(0, 10)
+    Instance.new("UIPadding", Sidebar).PaddingTop = UDim.new(0, 15)
+
+    local Pages = {}
+    local LibMethods = {}
+
+    function LibMethods:CreateTab(tabName)
+        local Page = Instance.new("Frame", Container)
+        Page.Size = UDim2.new(1, 0, 1, 0)
+        Page.BackgroundTransparency = 1
+        Page.Visible = false
+
+        -- Centered Pill Buttons
+        local TabBtn = Instance.new("TextButton", Sidebar)
+        TabBtn.Size = UDim2.new(0, 85, 0, 40)
+        TabBtn.BackgroundColor3 = Color3.fromRGB(205, 210, 212)
+        TabBtn.Text = tabName:lower()
+        TabBtn.Font = Enum.Font.Gotham
+        TabBtn.TextColor3 = Color3.fromRGB(50, 55, 60)
+        TabBtn.TextSize = 13
+        Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 20)
+
+        TabBtn.MouseButton1Click:Connect(function()
+            for _, v in pairs(Pages) do v.Visible = false end
+            Page.Visible = true
+        end)
+
+        if #Sidebar:GetChildren() == 2 then Page.Visible = true end
+        Pages[tabName] = Page
+
+        local PageMethods = {}
+
+        -- Button Grid Layout
+        function PageMethods:AddButtonGrid(welcome, instr)
+            local WelcomeText = Instance.new("TextLabel", Page)
+            WelcomeText.Size = UDim2.new(1, -20, 0, 50)
+            WelcomeText.Position = UDim2.fromOffset(15, 10)
+            WelcomeText.BackgroundTransparency = 1
+            WelcomeText.Font = Enum.Font.GothamMedium
+            WelcomeText.Text = welcome:lower()
+            WelcomeText.TextColor3 = Color3.fromRGB(40, 50, 60)
+            WelcomeText.TextSize = 48
+            WelcomeText.TextXAlignment = 0
+
+            local Instructions = Instance.new("TextLabel", Page)
+            Instructions.BackgroundColor3 = Color3.fromRGB(205, 210, 212)
+            Instructions.Position = UDim2.fromOffset(15, 65)
+            Instructions.Size = UDim2.new(1, -30, 0, 28)
+            Instructions.Font = Enum.Font.Gotham
+            Instructions.Text = "  " .. instr:lower()
+            Instructions.TextColor3 = Color3.fromRGB(50, 55, 60)
+            Instructions.TextSize = 14
+            Instructions.TextXAlignment = 0
+            Instance.new("UICorner", Instructions).CornerRadius = UDim.new(0, 6)
+
+            local Scroll = Instance.new("ScrollingFrame", Page)
+            Scroll.Position = UDim2.fromOffset(5, 105)
+            Scroll.Size = UDim2.new(1, -10, 1, -110)
+            Scroll.BackgroundTransparency = 1
+            Scroll.ScrollBarThickness = 4
+            Scroll.ScrollBarImageColor3 = Color3.fromRGB(180, 180, 180)
+            Scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+            Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+            local Grid = Instance.new("UIGridLayout", Scroll)
+            Grid.CellPadding = UDim2.new(0, 6, 0, 6)
+            Grid.CellSize = UDim2.new(0, 85, 0, 45)
+            Instance.new("UIPadding", Scroll).PaddingLeft = UDim.new(0, 10)
+
+            local GridMethods = {}
+            function GridMethods:AddButton(txt, cb)
+                local B = Instance.new("TextButton", Scroll)
+                B.BackgroundColor3 = Color3.fromRGB(210, 215, 218)
+                B.Font = Enum.Font.Gotham
+                B.Text = txt:lower()
+                B.TextColor3 = Color3.fromRGB(50, 55, 60)
+                B.TextSize = 11
+                Instance.new("UICorner", B).CornerRadius = UDim.new(0, 8)
+                B.MouseButton1Click:Connect(cb)
+            end
+            return GridMethods
+        end
+
+        -- Code Executor Layout
+        function PageMethods:AddExecutor()
+            local TBoxFrame = Instance.new("Frame", Page)
+            TBoxFrame.Size = UDim2.new(1, -30, 0, 210)
+            TBoxFrame.Position = UDim2.fromOffset(15, 15)
+            TBoxFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            Instance.new("UICorner", TBoxFrame).CornerRadius = UDim.new(0, 8)
+
+            local CodeBox = Instance.new("TextBox", TBoxFrame)
+            CodeBox.Size = UDim2.new(1, -20, 1, -20)
+            CodeBox.Position = UDim2.fromOffset(10, 10)
+            CodeBox.BackgroundTransparency = 1
+            CodeBox.MultiLine = true
+            CodeBox.Text = "print('Omni Loaded')"
+            CodeBox.Font = Enum.Font.Gotham
+            CodeBox.TextSize = 18 -- Slightly smaller for better coding space
+            CodeBox.TextColor3 = Color3.fromRGB(50, 55, 60)
+            CodeBox.TextXAlignment = 0
+            CodeBox.TextYAlignment = 0
+            CodeBox.ClearTextOnFocus = false
+
+            local Execute = Instance.new("TextButton", Page)
+            Execute.Size = UDim2.new(0, 100, 0, 40)
+            Execute.Position = UDim2.fromOffset(15, 240)
+            Execute.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            Execute.Text = "execute"; Execute.Font = Enum.Font.Gotham; Execute.TextSize = 14
+            Instance.new("UICorner", Execute).CornerRadius = UDim.new(0, 8)
+
+            local Clear = Instance.new("TextButton", Page)
+            Clear.Size = UDim2.new(0, 100, 0, 40)
+            Clear.Position = UDim2.new(1, -115, 0, 240)
+            Clear.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            Clear.Text = "clear"; Clear.Font = Enum.Font.Gotham; Clear.TextSize = 14
+            Instance.new("UICorner", Clear).CornerRadius = UDim.new(0, 8)
+
+            Execute.MouseButton1Click:Connect(function() loadstring(CodeBox.Text)() end)
+            Clear.MouseButton1Click:Connect(function() CodeBox.Text = "" end)
+        end
+
+        return PageMethods
+    end
+
+    return LibMethods
+end
+
+return OmniLib
