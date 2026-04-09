@@ -1,30 +1,23 @@
-local OmniLib = {}
-OmniLib.__index = OmniLib
+local Omni = {}
+Omni.__index = Omni
 
-local CoreGui = game:GetService("CoreGui")
 local UIS = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
 
-function OmniLib.new()
-    local self = setmetatable({}, OmniLib)
+function Omni.new()
+    local self = setmetatable({}, Omni)
+    if CoreGui:FindFirstChild("Omni_UI") then CoreGui.Omni_UI:Destroy() end
     
-    if CoreGui:FindFirstChild("Omni_UI") then 
-        CoreGui.Omni_UI:Destroy() 
-    end
-
-    self.Gui = Instance.new("ScreenGui")
+    self.Gui = Instance.new("ScreenGui", CoreGui)
     self.Gui.Name = "Omni_UI"
-    self.Gui.Parent = CoreGui
-    self.Gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-
     return self
 end
 
-function OmniLib:CreateWindow(title)
+function Omni:CreateWindow(title)
     local Main = Instance.new("Frame", self.Gui)
     Main.Size = UDim2.fromOffset(520, 380)
     Main.Position = UDim2.new(0.5, -260, 0.5, -190)
     Main.BackgroundColor3 = Color3.fromRGB(245, 245, 245)
-    Main.BorderSizePixel = 0
     Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
 
     local Topbar = Instance.new("Frame", Main)
@@ -36,18 +29,11 @@ function OmniLib:CreateWindow(title)
     local TitleLabel = Instance.new("TextLabel", Topbar)
     TitleLabel.Size = UDim2.new(1, -12, 1, 0)
     TitleLabel.Position = UDim2.fromOffset(12, 0)
-    TitleLabel.Text = title
-    TitleLabel.Font = Enum.Font.Gotham
-    TitleLabel.TextColor3 = Color3.fromRGB(50, 55, 60)
-    TitleLabel.TextSize = 15
-    TitleLabel.TextXAlignment = 0
-    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Text = title; TitleLabel.Font = Enum.Font.Gotham; TitleLabel.TextColor3 = Color3.fromRGB(50, 55, 60); TitleLabel.TextSize = 14; TitleLabel.TextXAlignment = 0; TitleLabel.BackgroundTransparency = 1
 
-    local dragging, dragInput, dragStart, startPos
+    local dragging, dragStart, startPos
     Topbar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true; dragStart = input.Position; startPos = Main.Position
-        end
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true; dragStart = input.Position; startPos = Main.Position end
     end)
     UIS.InputChanged:Connect(function(input)
         if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
@@ -58,142 +44,102 @@ function OmniLib:CreateWindow(title)
     UIS.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
 
     local Container = Instance.new("Frame", Main)
-    Container.Size = UDim2.new(0, 380, 0, 310)
-    Container.Position = UDim2.fromOffset(12, 56)
-    Container.BackgroundColor3 = Color3.fromRGB(225, 228, 230)
+    Container.Size = UDim2.new(0, 380, 0, 310); Container.Position = UDim2.fromOffset(12, 56); Container.BackgroundColor3 = Color3.fromRGB(225, 228, 230)
     Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 12)
 
     local Sidebar = Instance.new("Frame", Main)
-    Sidebar.Size = UDim2.new(0, 104, 0, 310)
-    Sidebar.Position = UDim2.fromOffset(404, 56)
-    Sidebar.BackgroundColor3 = Color3.fromRGB(225, 228, 230)
+    Sidebar.Size = UDim2.new(0, 104, 0, 310); Sidebar.Position = UDim2.fromOffset(404, 56); Sidebar.BackgroundColor3 = Color3.fromRGB(225, 228, 230)
     Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 12)
-
-    local SidebarList = Instance.new("UIListLayout", Sidebar)
-    SidebarList.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    SidebarList.Padding = UDim.new(0, 10)
+    Instance.new("UIListLayout", Sidebar).HorizontalAlignment = Enum.HorizontalAlignment.Center
     Instance.new("UIPadding", Sidebar).PaddingTop = UDim.new(0, 15)
 
     local Pages = {}
-    local LibMethods = {}
+    local Lib = {}
 
-    function LibMethods:CreateTab(tabName)
-        local Page = Instance.new("Frame", Container)
-        Page.Size = UDim2.new(1, 0, 1, 0)
-        Page.BackgroundTransparency = 1
-        Page.Visible = false
+    function Lib:CreateTab(name)
+        local Page = Instance.new("ScrollingFrame", Container)
+        Page.Size = UDim2.new(1, -10, 1, -10); Page.Position = UDim2.fromOffset(5, 5); Page.BackgroundTransparency = 1; Page.Visible = false; Page.ScrollBarThickness = 2; Page.CanvasSize = UDim2.new(0,0,0,0); Page.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        local Layout = Instance.new("UIListLayout", Page); Layout.Padding = UDim.new(0, 8); Layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+        Instance.new("UIPadding", Page).PaddingTop = UDim.new(0, 5)
 
         local TabBtn = Instance.new("TextButton", Sidebar)
-        TabBtn.Size = UDim2.new(0, 85, 0, 40)
-        TabBtn.BackgroundColor3 = Color3.fromRGB(205, 210, 212)
-        TabBtn.Text = tabName:lower()
-        TabBtn.Font = Enum.Font.Gotham
-        TabBtn.TextColor3 = Color3.fromRGB(50, 55, 60)
-        TabBtn.TextSize = 13
+        TabBtn.Size = UDim2.new(0, 85, 0, 40); TabBtn.BackgroundColor3 = Color3.fromRGB(205, 210, 212); TabBtn.Text = name:lower(); TabBtn.Font = Enum.Font.Gotham; TabBtn.TextColor3 = Color3.fromRGB(50, 55, 60)
         Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 20)
-
+        
         TabBtn.MouseButton1Click:Connect(function()
             for _, v in pairs(Pages) do v.Visible = false end
             Page.Visible = true
         end)
-
         if #Sidebar:GetChildren() == 2 then Page.Visible = true end
-        Pages[tabName] = Page
+        Pages[name] = Page
 
-        local PageMethods = {}
+        local PageElements = {}
 
-        function PageMethods:AddButtonGrid(welcome, instr)
-            local WelcomeText = Instance.new("TextLabel", Page)
-            WelcomeText.Size = UDim2.new(1, -20, 0, 50)
-            WelcomeText.Position = UDim2.fromOffset(15, 10)
-            WelcomeText.BackgroundTransparency = 1
-            WelcomeText.Font = Enum.Font.GothamMedium
-            WelcomeText.Text = welcome:lower()
-            WelcomeText.TextColor3 = Color3.fromRGB(40, 50, 60)
-            WelcomeText.TextSize = 48
-            WelcomeText.TextXAlignment = 0
+        function PageElements:Button(text, cb)
+            local B = Instance.new("TextButton", Page)
+            B.Size = UDim2.new(0, 340, 0, 35); B.BackgroundColor3 = Color3.fromRGB(210, 215, 218); B.Text = text:lower(); B.Font = Enum.Font.Gotham; B.TextColor3 = Color3.fromRGB(60, 60, 60); B.TextSize = 13
+            Instance.new("UICorner", B).CornerRadius = UDim.new(0, 8)
+            B.MouseButton1Click:Connect(cb)
+        end
 
-            local Instructions = Instance.new("TextLabel", Page)
-            Instructions.BackgroundColor3 = Color3.fromRGB(205, 210, 212)
-            Instructions.Position = UDim2.fromOffset(15, 65)
-            Instructions.Size = UDim2.new(1, -30, 0, 28)
-            Instructions.Font = Enum.Font.Gotham
-            Instructions.Text = "  " .. instr:lower()
-            Instructions.TextColor3 = Color3.fromRGB(50, 55, 60)
-            Instructions.TextSize = 14
-            Instructions.TextXAlignment = 0
-            Instance.new("UICorner", Instructions).CornerRadius = UDim.new(0, 6)
+        function PageElements:Slider(text, min, max, default, cb)
+            local SFrame = Instance.new("Frame", Page)
+            SFrame.Size = UDim2.new(0, 340, 0, 45); SFrame.BackgroundColor3 = Color3.fromRGB(210, 215, 218)
+            Instance.new("UICorner", SFrame).CornerRadius = UDim.new(0, 8)
+            
+            local Title = Instance.new("TextLabel", SFrame)
+            Title.Position = UDim2.new(0, 10, 0, 5); Title.Text = text:lower(); Title.Font = Enum.Font.Gotham; Title.TextColor3 = Color3.fromRGB(60, 60, 60); Title.TextSize = 12; Title.BackgroundTransparency = 1
+            
+            local Bar = Instance.new("Frame", SFrame)
+            Bar.Size = UDim2.new(0, 320, 0, 6); Bar.Position = UDim2.new(0, 10, 0, 28); Bar.BackgroundColor3 = Color3.fromRGB(190, 195, 198)
+            
+            local Fill = Instance.new("Frame", Bar)
+            Fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0); Fill.BackgroundColor3 = Color3.fromRGB(120, 130, 140)
 
-            local Scroll = Instance.new("ScrollingFrame", Page)
-            Scroll.Position = UDim2.fromOffset(5, 105)
-            Scroll.Size = UDim2.new(1, -10, 1, -110)
-            Scroll.BackgroundTransparency = 1
-            Scroll.ScrollBarThickness = 4
-            Scroll.ScrollBarImageColor3 = Color3.fromRGB(180, 180, 180)
-            Scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-            Scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-
-            local Grid = Instance.new("UIGridLayout", Scroll)
-            Grid.CellPadding = UDim2.new(0, 6, 0, 6)
-            Grid.CellSize = UDim2.new(0, 85, 0, 45)
-            Instance.new("UIPadding", Scroll).PaddingLeft = UDim.new(0, 10)
-
-            local GridMethods = {}
-            function GridMethods:AddButton(txt, cb)
-                local B = Instance.new("TextButton", Scroll)
-                B.BackgroundColor3 = Color3.fromRGB(210, 215, 218)
-                B.Font = Enum.Font.Gotham
-                B.Text = txt:lower()
-                B.TextColor3 = Color3.fromRGB(50, 55, 60)
-                B.TextSize = 11
-                Instance.new("UICorner", B).CornerRadius = UDim.new(0, 8)
-                B.MouseButton1Click:Connect(cb)
+            local function update(input)
+                local pos = math.clamp((input.Position.X - Bar.AbsolutePosition.X) / Bar.AbsoluteSize.X, 0, 1)
+                Fill.Size = UDim2.new(pos, 0, 1, 0)
+                cb(math.floor(min + (max - min) * pos))
             end
-            return GridMethods
+
+            Bar.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                    local connection; connection = UIS.InputChanged:Connect(function(move)
+                        if UIS:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then update(move) else connection:Disconnect() end
+                    end)
+                    update(input)
+                end
+            end)
         end
 
-        function PageMethods:AddExecutor()
-            local TBoxFrame = Instance.new("Frame", Page)
-            TBoxFrame.Size = UDim2.new(1, -30, 0, 210)
-            TBoxFrame.Position = UDim2.fromOffset(15, 15)
-            TBoxFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            Instance.new("UICorner", TBoxFrame).CornerRadius = UDim.new(0, 8)
+        function PageElements:Dropdown(text, list, cb)
+            local DFrame = Instance.new("Frame", Page)
+            DFrame.Size = UDim2.new(0, 340, 0, 35); DFrame.BackgroundColor3 = Color3.fromRGB(210, 215, 218); DFrame.ClipsDescendants = true
+            Instance.new("UICorner", DFrame).CornerRadius = UDim.new(0, 8)
+            
+            local DBtn = Instance.new("TextButton", DFrame)
+            DBtn.Size = UDim2.new(1, 0, 0, 35); DBtn.BackgroundTransparency = 1; DBtn.Text = text:lower() .. "  ▼"; DBtn.Font = Enum.Font.Gotham; DBtn.TextColor3 = Color3.fromRGB(60, 60, 60)
+            
+            local open = false
+            DBtn.MouseButton1Click:Connect(function()
+                open = not open
+                DFrame.Size = open and UDim2.new(0, 340, 0, 35 + (#list * 30)) or UDim2.new(0, 340, 0, 35)
+            end)
 
-            local CodeBox = Instance.new("TextBox", TBoxFrame)
-            CodeBox.Size = UDim2.new(1, -20, 1, -20)
-            CodeBox.Position = UDim2.fromOffset(10, 10)
-            CodeBox.BackgroundTransparency = 1
-            CodeBox.MultiLine = true
-            CodeBox.Text = "print('Omni Loaded')"
-            CodeBox.Font = Enum.Font.Gotham
-            CodeBox.TextSize = 18 -- Slightly smaller for better coding space
-            CodeBox.TextColor3 = Color3.fromRGB(50, 55, 60)
-            CodeBox.TextXAlignment = 0
-            CodeBox.TextYAlignment = 0
-            CodeBox.ClearTextOnFocus = false
-
-            local Execute = Instance.new("TextButton", Page)
-            Execute.Size = UDim2.new(0, 100, 0, 40)
-            Execute.Position = UDim2.fromOffset(15, 240)
-            Execute.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            Execute.Text = "execute"; Execute.Font = Enum.Font.Gotham; Execute.TextSize = 14
-            Instance.new("UICorner", Execute).CornerRadius = UDim.new(0, 8)
-
-            local Clear = Instance.new("TextButton", Page)
-            Clear.Size = UDim2.new(0, 100, 0, 40)
-            Clear.Position = UDim2.new(1, -115, 0, 240)
-            Clear.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-            Clear.Text = "clear"; Clear.Font = Enum.Font.Gotham; Clear.TextSize = 14
-            Instance.new("UICorner", Clear).CornerRadius = UDim.new(0, 8)
-
-            Execute.MouseButton1Click:Connect(function() loadstring(CodeBox.Text)() end)
-            Clear.MouseButton1Click:Connect(function() CodeBox.Text = "" end)
+            for _, val in pairs(list) do
+                local opt = Instance.new("TextButton", DFrame)
+                opt.Size = UDim2.new(1, 0, 0, 30); opt.Position = UDim2.new(0, 0, 0, 35 + ((_ - 1) * 30)); opt.Text = tostring(val); opt.BackgroundColor3 = Color3.fromRGB(200, 205, 208); opt.Font = Enum.Font.Gotham; opt.TextSize = 12
+                opt.MouseButton1Click:Connect(function()
+                    DBtn.Text = text:lower() .. ": " .. tostring(val)
+                    cb(val)
+                    open = false; DFrame.Size = UDim2.new(0, 340, 0, 35)
+                end)
+            end
         end
 
-        return PageMethods
+        return PageElements
     end
-
-    return LibMethods
+    return Lib
 end
 
-return OmniLib
+return Omni
