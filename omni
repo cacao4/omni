@@ -11,7 +11,53 @@ function Omni.new()
     self.Gui = Instance.new("ScreenGui", CoreGui)
     self.Gui.Name = "Omni_UI"
     self.FirstTab = nil
+    
+    self.NotifContainer = Instance.new("Frame", self.Gui)
+    self.NotifContainer.Size = UDim2.new(0, 250, 1, 0)
+    self.NotifContainer.Position = UDim2.new(1, -260, 0, 0)
+    self.NotifContainer.BackgroundTransparency = 1
+    local Layout = Instance.new("UIListLayout", self.NotifContainer)
+    Layout.VerticalAlignment = Enum.VerticalAlignment.Bottom
+    Layout.Padding = UDim.new(0, 10)
+    Instance.new("UIPadding", self.NotifContainer).PaddingBottom = UDim.new(0, 20)
+    
     return self
+end
+
+function Omni:Notify(title, text, duration)
+    local n = Instance.new("Frame", self.NotifContainer)
+    n.Size = UDim2.new(1, 0, 0, 60)
+    n.BackgroundColor3 = Color3.fromRGB(240, 242, 245)
+    n.Position = UDim2.new(1, 20, 0, 0)
+    Instance.new("UICorner", n).CornerRadius = UDim.new(0, 10)
+    
+    local t = Instance.new("TextLabel", n)
+    t.Size = UDim2.new(1, -20, 0, 20)
+    t.Position = UDim2.fromOffset(10, 8)
+    t.Text = title:lower()
+    t.Font = Enum.Font.GothamBold
+    t.TextColor3 = Color3.fromRGB(60, 65, 70)
+    t.TextSize = 13
+    t.BackgroundTransparency = 1
+    t.TextXAlignment = 0
+    
+    local d = Instance.new("TextLabel", n)
+    d.Size = UDim2.new(1, -20, 0, 20)
+    d.Position = UDim2.fromOffset(10, 28)
+    d.Text = text:lower()
+    d.Font = Enum.Font.Gotham
+    d.TextColor3 = Color3.fromRGB(100, 105, 110)
+    d.TextSize = 12
+    d.BackgroundTransparency = 1
+    d.TextXAlignment = 0
+
+    TweenService:Create(n, TweenInfo.new(0.4, Enum.EasingStyle.Back), {Position = UDim2.new(0, 0, 0, 0)}):Play()
+    
+    task.delay(duration or 3, function()
+        TweenService:Create(n, TweenInfo.new(0.4), {Position = UDim2.new(1.5, 0, 0, 0)}):Play()
+        task.wait(0.5)
+        n:Destroy()
+    end)
 end
 
 function Omni:CreateWindow(title)
@@ -20,7 +66,7 @@ function Omni:CreateWindow(title)
     Main.Position = UDim2.new(0.5, -260, 0.5, -200)
     Main.BackgroundColor3 = Color3.fromRGB(240, 242, 245)
     Main.BorderSizePixel = 0
-    Main.Active = true -- Prevents clicking through to game objects
+    Main.Active = true
     Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 14)
 
     local Topbar = Instance.new("Frame", Main)
@@ -70,9 +116,6 @@ function Omni:CreateWindow(title)
             dragging = true
             dragStart = input.Position
             startPos = Main.Position 
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then dragging = false end
-            end)
         end
     end)
     UIS.InputChanged:Connect(function(input)
@@ -81,6 +124,7 @@ function Omni:CreateWindow(title)
             Main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         end
     end)
+    UIS.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
 
     local Container = Instance.new("Frame", Main)
     Container.Size = UDim2.new(0, 380, 0, 325)
@@ -128,13 +172,9 @@ function Omni:CreateWindow(title)
             Page.Visible = true
         end)
 
-        -- This makes the VERY FIRST tab open automatically
-        if not self.FirstTab then
-            self.FirstTab = Page
-            Page.Visible = true
-        end
-        
+        if not self.FirstTab then self.FirstTab = Page; Page.Visible = true end
         Pages[name] = Page
+        
         local PageElements = {}
 
         function PageElements:Button(text, cb)
