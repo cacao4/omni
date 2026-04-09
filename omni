@@ -8,7 +8,6 @@ local TweenService = game:GetService("TweenService")
 function Omni.new()
     local self = setmetatable({}, Omni)
     if CoreGui:FindFirstChild("Omni_UI") then CoreGui.Omni_UI:Destroy() end
-    
     self.Gui = Instance.new("ScreenGui", CoreGui)
     self.Gui.Name = "Omni_UI"
     self.Minimized = false
@@ -219,4 +218,22 @@ function Omni:CreateWindow(title)
                 opt.Position = UDim2.new(0, 5, 0, 38 + ((i - 1) * 32))
                 opt.Text = tostring(val)
                 opt.BackgroundColor3 = Color3.fromRGB(195, 198, 202)
-                opt.Font = Enum.
+                opt.Font = Enum.Font.Gotham
+                opt.TextSize = 12
+                opt.TextColor3 = Color3.fromRGB(60,60,60)
+                Instance.new("UICorner", opt).CornerRadius = UDim.new(0, 6)
+                opt.MouseButton1Click:Connect(function()
+                    DBtn.Text = text:lower() .. ": " .. tostring(val)
+                    cb(val)
+                    open = false
+                    DFrame.Size = UDim2.new(1, 0, 0, 38)
+                end)
+            end
+        end
+
+        return PageElements
+    end
+    return Lib
+end
+
+return Omni
