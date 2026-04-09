@@ -53,7 +53,7 @@ function Omni:Notify(title, text, duration)
 
     TweenService:Create(n, TweenInfo.new(0.4, Enum.EasingStyle.Back), {Position = UDim2.new(0, 0, 0, 0)}):Play()
     task.delay(duration or 3, function()
-        if n then
+        if n and n.Parent then
             TweenService:Create(n, TweenInfo.new(0.4), {Position = UDim2.new(1.5, 0, 0, 0)}):Play()
             task.wait(0.5)
             n:Destroy()
@@ -127,6 +127,7 @@ function Omni:CreateWindow(title)
     Container.Size = UDim2.new(0, 380, 0, 325)
     Container.Position = UDim2.fromOffset(12, 60)
     Container.BackgroundColor3 = Color3.fromRGB(225, 228, 232)
+    Container.Active = true
     Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 10)
 
     local Sidebar = Instance.new("Frame", Main)
@@ -149,11 +150,11 @@ function Omni:CreateWindow(title)
         Page.Position = UDim2.fromOffset(10, 10)
         Page.BackgroundTransparency = 1
         Page.Visible = false
-        Page.ScrollBarThickness = 0
+        Page.ScrollBarThickness = 2 -- Added thin scrollbar so you can see it
+        Page.ScrollBarImageColor3 = Color3.fromRGB(180, 180, 180)
         Page.CanvasSize = UDim2.new(0,0,0,0)
-        Page.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        Page.AutomaticCanvasSize = Enum.AutomaticSize.Y -- THIS FIXES THE SLIDER ISSUE
         
-        -- Layout to prevent elements from overlapping
         local Layout = Instance.new("UIListLayout", Page)
         Layout.Padding = UDim.new(0, 8)
         Layout.SortOrder = Enum.SortOrder.LayoutOrder
