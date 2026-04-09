@@ -7,7 +7,6 @@ local UIS = game:GetService("UserInputService")
 function OmniLib.new()
     local self = setmetatable({}, OmniLib)
     
-    -- Cleanup old UI if it exists
     if CoreGui:FindFirstChild("Omni_UI") then 
         CoreGui.Omni_UI:Destroy() 
     end
@@ -28,7 +27,6 @@ function OmniLib:CreateWindow(title)
     Main.BorderSizePixel = 0
     Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
 
-    -- Topbar (The only draggable area)
     local Topbar = Instance.new("Frame", Main)
     Topbar.Size = UDim2.new(1, -24, 0, 32)
     Topbar.Position = UDim2.fromOffset(12, 12)
@@ -45,7 +43,6 @@ function OmniLib:CreateWindow(title)
     TitleLabel.TextXAlignment = 0
     TitleLabel.BackgroundTransparency = 1
 
-    -- Dragging Logic
     local dragging, dragInput, dragStart, startPos
     Topbar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -60,14 +57,12 @@ function OmniLib:CreateWindow(title)
     end)
     UIS.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
 
-    -- Content Area
     local Container = Instance.new("Frame", Main)
     Container.Size = UDim2.new(0, 380, 0, 310)
     Container.Position = UDim2.fromOffset(12, 56)
     Container.BackgroundColor3 = Color3.fromRGB(225, 228, 230)
     Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 12)
 
-    -- Sidebar Area
     local Sidebar = Instance.new("Frame", Main)
     Sidebar.Size = UDim2.new(0, 104, 0, 310)
     Sidebar.Position = UDim2.fromOffset(404, 56)
@@ -88,7 +83,6 @@ function OmniLib:CreateWindow(title)
         Page.BackgroundTransparency = 1
         Page.Visible = false
 
-        -- Centered Pill Buttons
         local TabBtn = Instance.new("TextButton", Sidebar)
         TabBtn.Size = UDim2.new(0, 85, 0, 40)
         TabBtn.BackgroundColor3 = Color3.fromRGB(205, 210, 212)
@@ -108,7 +102,6 @@ function OmniLib:CreateWindow(title)
 
         local PageMethods = {}
 
-        -- Button Grid Layout
         function PageMethods:AddButtonGrid(welcome, instr)
             local WelcomeText = Instance.new("TextLabel", Page)
             WelcomeText.Size = UDim2.new(1, -20, 0, 50)
@@ -159,7 +152,6 @@ function OmniLib:CreateWindow(title)
             return GridMethods
         end
 
-        -- Code Executor Layout
         function PageMethods:AddExecutor()
             local TBoxFrame = Instance.new("Frame", Page)
             TBoxFrame.Size = UDim2.new(1, -30, 0, 210)
