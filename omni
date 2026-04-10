@@ -4,6 +4,24 @@ Omni.__index = Omni
 local UIS = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+
+-- THEME CONFIG
+local Themes = {
+    ["gray"] = Color3.fromRGB(215, 218, 222),
+    ["red"] = Color3.fromRGB(255, 100, 100),
+    ["green"] = Color3.fromRGB(100, 255, 130),
+    ["purple"] = Color3.fromRGB(180, 130, 255),
+    ["blue"] = Color3.fromRGB(100, 150, 255),
+    ["yellow"] = Color3.fromRGB(255, 230, 100),
+    ["light blue"] = Color3.fromRGB(150, 220, 255),
+    ["orange"] = Color3.fromRGB(255, 170, 100),
+    ["black"] = Color3.fromRGB(40, 40, 40),
+    ["white"] = Color3.fromRGB(255, 255, 255),
+    ["dark blue"] = Color3.fromRGB(50, 80, 150),
+    ["dark green"] = Color3.fromRGB(40, 120, 60),
+    ["light green"] = Color3.fromRGB(180, 255, 180)
+}
 
 function Omni.new()
     local self = setmetatable({}, Omni)
@@ -11,8 +29,12 @@ function Omni.new()
     
     self.Gui = Instance.new("ScreenGui", CoreGui)
     self.Gui.Name = "Omni_UI"
+    self.ThemeColor = Themes["gray"]
+    self.ElementsToTheme = {}
     self.FirstTab = nil
-
+    self.Enabled = true
+    
+    -- Notification Container
     self.NotifContainer = Instance.new("Frame", self.Gui)
     self.NotifContainer.Size = UDim2.new(0, 250, 1, 0)
     self.NotifContainer.Position = UDim2.new(1, -260, 0, 0)
@@ -21,7 +43,7 @@ function Omni.new()
     Layout.VerticalAlignment = Enum.VerticalAlignment.Bottom
     Layout.Padding = UDim.new(0, 10)
     
-    -- Start 5-Minute Notification Loop
+    -- 5 Minute Notification Loop
     task.spawn(function()
         while task.wait(300) do
             self:Notify("enjoying ui?", "you can get it on rscripts", 5)
@@ -31,56 +53,21 @@ function Omni.new()
     return self
 end
 
-function Omni:ShowLoading(scriptName)
-    local LoadFrame = Instance.new("Frame", self.Gui)
-    LoadFrame.Size = UDim2.new(1, 0, 1, 0)
-    LoadFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    LoadFrame.ZIndex = 100 -- Covers everything
-    
-    local BigTitle = Instance.new("TextLabel", LoadFrame)
-    BigTitle.Size = UDim2.new(1, 0, 0, 100)
-    BigTitle.Position = UDim2.new(0, 0, 0.45, 0)
-    BigTitle.Text = scriptName:lower()
-    BigTitle.Font = Enum.Font.GothamBold
-    BigTitle.TextColor3 = Color3.new(1, 1, 1)
-    BigTitle.TextSize = 60
-    BigTitle.BackgroundTransparency = 1
-    
-    local CornerCredit = Instance.new("TextLabel", LoadFrame)
-    CornerCredit.Size = UDim2.new(0, 200, 0, 30)
-    CornerCredit.Position = UDim2.new(1, -210, 1, -40)
-    CornerCredit.Text = "omni ui"
-    CornerCredit.Font = Enum.Font.GothamMedium
-    CornerCredit.TextColor3 = Color3.fromRGB(150, 150, 150)
-    CornerCredit.TextSize = 18
-    CornerCredit.TextXAlignment = 2
-    CornerCredit.BackgroundTransparency = 1
-
-    task.wait(3)
-    TweenService:Create(LoadFrame, TweenInfo.new(1), {BackgroundTransparency = 1}):Play()
-    TweenService:Create(BigTitle, TweenInfo.new(1), {TextTransparency = 1}):Play()
-    TweenService:Create(CornerCredit, TweenInfo.new(1), {TextTransparency = 1}):Play()
-    task.delay(1, function() LoadFrame:Destroy() end)
-end
-
 function Omni:Notify(title, text, duration)
     local n = Instance.new("Frame", self.NotifContainer)
     n.Size = UDim2.new(1, 0, 0, 60)
     n.BackgroundColor3 = Color3.new(0,0,0)
-    n.BackgroundTransparency = 0.5 -- Transparent as requested
+    n.BackgroundTransparency = 0.5
     n.Position = UDim2.new(1.5, 0, 0, 0)
     Instance.new("UICorner", n).CornerRadius = UDim.new(0, 10)
     
-
     local t = Instance.new("TextLabel", n)
     t.Size = UDim2.new(1, -20, 0, 20); t.Position = UDim2.fromOffset(10, 8)
-    t.Text = title:lower(); t.Font = Enum.Font.GothamBold; t.TextColor3 = Color3.new(1,1,1)
-    t.TextSize = 13; t.BackgroundTransparency = 1; t.TextXAlignment = 0
+    t.Text = title:lower(); t.Font = Enum.Font.GothamBold; t.TextColor3 = Color3.new(1,1,1); t.TextSize = 13; t.BackgroundTransparency = 1; t.TextXAlignment = 0
     
     local d = Instance.new("TextLabel", n)
     d.Size = UDim2.new(1, -20, 0, 20); d.Position = UDim2.fromOffset(10, 28)
-    d.Text = text:lower(); d.Font = Enum.Font.Gotham; d.TextColor3 = Color3.fromRGB(200, 200, 200)
-    d.TextSize = 12; d.BackgroundTransparency = 1; d.TextXAlignment = 0
+    d.Text = text:lower(); d.Font = Enum.Font.Gotham; d.TextColor3 = Color3.fromRGB(200, 200, 200); d.TextSize = 12; d.BackgroundTransparency = 1; d.TextXAlignment = 0
 
     TweenService:Create(n, TweenInfo.new(0.4, Enum.EasingStyle.Back), {Position = UDim2.new(0, 0, 0, 0)}):Play()
     task.delay(duration or 3, function()
@@ -91,3 +78,137 @@ function Omni:Notify(title, text, duration)
     end)
 end
 
+function Omni:ShowLoading(scriptName)
+    local LoadFrame = Instance.new("Frame", self.Gui)
+    LoadFrame.Size = UDim2.new(1, 0, 1, 0)
+    LoadFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    LoadFrame.ZIndex = 100
+    
+    local BigTitle = Instance.new("TextLabel", LoadFrame)
+    BigTitle.Size = UDim2.new(1, 0, 0, 100); BigTitle.Position = UDim2.new(0, 0, 0.45, 0)
+    BigTitle.Text = scriptName:lower(); BigTitle.Font = Enum.Font.GothamBold; BigTitle.TextColor3 = Color3.new(1, 1, 1); BigTitle.TextSize = 60; BigTitle.BackgroundTransparency = 1
+    
+    local CornerCredit = Instance.new("TextLabel", LoadFrame)
+    CornerCredit.Size = UDim2.new(0, 200, 0, 30); CornerCredit.Position = UDim2.new(1, -210, 1, -40); CornerCredit.Text = "omni ui"; CornerCredit.Font = Enum.Font.GothamMedium; CornerCredit.TextColor3 = Color3.fromRGB(150, 150, 150); CornerCredit.TextSize = 18; CornerCredit.TextXAlignment = 2; CornerCredit.BackgroundTransparency = 1
+
+    task.wait(3)
+    TweenService:Create(LoadFrame, TweenInfo.new(1), {BackgroundTransparency = 1}):Play()
+    TweenService:Create(BigTitle, TweenInfo.new(1), {TextTransparency = 1}):Play()
+    TweenService:Create(CornerCredit, TweenInfo.new(1), {TextTransparency = 1}):Play()
+    task.delay(1, function() LoadFrame:Destroy() end)
+end
+
+function Omni:CreateWindow(title, keybind)
+    local Main = Instance.new("Frame", self.Gui)
+    Main.Size = UDim2.fromOffset(520, 400); Main.Position = UDim2.new(0.5, -260, 0.5, -200); Main.BackgroundColor3 = Color3.fromRGB(240, 242, 245); Main.Active = true; Main.ClipsDescendants = true
+    Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 14)
+
+    UIS.InputBegan:Connect(function(input, gpe)
+        if not gpe and input.KeyCode == (keybind or Enum.KeyCode.RightControl) then self.Enabled = not self.Enabled; Main.Visible = self.Enabled end
+    end)
+
+    local Topbar = Instance.new("Frame", Main)
+    Topbar.Size = UDim2.new(1, -24, 0, 35); Topbar.Position = UDim2.fromOffset(12, 12); Topbar.BackgroundColor3 = self.ThemeColor; Instance.new("UICorner", Topbar).CornerRadius = UDim.new(0, 10)
+    table.insert(self.ElementsToTheme, Topbar)
+
+    local TitleLabel = Instance.new("TextLabel", Topbar)
+    TitleLabel.Size = UDim2.new(1, 0, 1, 0); TitleLabel.Position = UDim2.fromOffset(12, 0); TitleLabel.Text = title:lower(); TitleLabel.Font = Enum.Font.GothamMedium; TitleLabel.TextColor3 = Color3.fromRGB(60, 65, 70); TitleLabel.TextSize = 14; TitleLabel.TextXAlignment = 0; TitleLabel.BackgroundTransparency = 1
+
+    local Controls = Instance.new("Frame", Topbar)
+    Controls.Size = UDim2.new(0, 70, 1, 0); Controls.Position = UDim2.new(1, -75, 0, 0); Controls.BackgroundTransparency = 1
+
+    local function CreateControl(txt, pos, callback)
+        local btn = Instance.new("TextButton", Controls)
+        btn.Size = UDim2.fromOffset(24, 24); btn.Position = UDim2.new(pos, -12, 0.5, -12); btn.BackgroundColor3 = Color3.fromRGB(190, 193, 198); btn.Text = txt; btn.TextColor3 = Color3.fromRGB(80, 85, 90); btn.Font = Enum.Font.GothamBold; btn.TextSize = 16; Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
+        btn.MouseButton1Click:Connect(callback)
+    end
+
+    local Container = Instance.new("Frame", Main)
+    Container.Size = UDim2.new(0, 380, 0, 325); Container.Position = UDim2.fromOffset(12, 60); Container.BackgroundColor3 = Color3.fromRGB(225, 228, 232); Container.Active = true; Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 10)
+
+    local Sidebar = Instance.new("Frame", Main)
+    Sidebar.Size = UDim2.new(0, 104, 0, 325); Sidebar.Position = UDim2.fromOffset(404, 60); Sidebar.BackgroundColor3 = Color3.fromRGB(225, 228, 232); Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 10)
+
+    CreateControl("-", 0.3, function() 
+        local isMin = Main.Size.Y.Offset < 100
+        local targetSize = isMin and UDim2.fromOffset(520, 400) or UDim2.fromOffset(520, 58)
+        TweenService:Create(Main, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = targetSize}):Play()
+        task.delay(isMin and 0 or 0.1, function() Container.Visible = isMin; Sidebar.Visible = isMin end)
+    end)
+    CreateControl("×", 0.8, function() self.Gui:Destroy() end)
+
+    -- Smooth Dragging
+    local dragStart, startPosPos
+    Topbar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then dragStart = input.Position; startPosPos = Main.Position end
+    end)
+    UIS.InputChanged:Connect(function(input)
+        if dragStart and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local delta = input.Position - dragStart
+            TweenService:Create(Main, TweenInfo.new(0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2.new(startPosPos.X.Scale, startPosPos.X.Offset + delta.X, startPosPos.Y.Scale, startPosPos.Y.Offset + delta.Y)}):Play()
+        end
+    end)
+    UIS.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragStart = nil end end)
+
+    local SidebarList = Instance.new("UIListLayout", Sidebar); SidebarList.HorizontalAlignment = Enum.HorizontalAlignment.Center; SidebarList.Padding = UDim.new(0, 8)
+    Instance.new("UIPadding", Sidebar).PaddingTop = UDim.new(0, 12)
+
+    local Pages = {}
+    local Lib = {}
+
+    function Lib:CreateTab(name)
+        local Page = Instance.new("ScrollingFrame", Container)
+        Page.Size = UDim2.new(1, -20, 1, -20); Page.Position = UDim2.fromOffset(10, 10); Page.BackgroundTransparency = 1; Page.Visible = false; Page.ScrollBarThickness = 2; Page.CanvasSize = UDim2.new(0,0,0,0); Page.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        local Layout = Instance.new("UIListLayout", Page); Layout.Padding = UDim.new(0, 8); Layout.SortOrder = Enum.SortOrder.LayoutOrder
+
+        local Header = Instance.new("TextLabel", Page)
+        Header.Size = UDim2.new(1, 0, 0, 40); Header.BackgroundTransparency = 1; Header.Text = name:lower(); Header.Font = Enum.Font.GothamBold; Header.TextColor3 = Color3.fromRGB(50, 55, 60); Header.TextSize = 24; Header.TextXAlignment = 0; Header.LayoutOrder = -1 
+        
+        local TabBtn = Instance.new("TextButton", Sidebar)
+        TabBtn.Size = UDim2.new(0, 85, 0, 35); TabBtn.BackgroundColor3 = Color3.fromRGB(200, 203, 207); TabBtn.Text = name:lower(); TabBtn.Font = Enum.Font.Gotham; TabBtn.TextColor3 = Color3.fromRGB(70, 75, 80); Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 10)
+        TabBtn.MouseButton1Click:Connect(function() for _, v in pairs(Pages) do v.Visible = false end; Page.Visible = true end)
+
+        if not self.FirstTab then self.FirstTab = Page; Page.Visible = true end
+        Pages[name] = Page
+        
+        local PageElements = {}
+        function PageElements:Button(text, cb)
+            local B = Instance.new("TextButton", Page); B.Size = UDim2.new(1, 0, 0, 38); B.BackgroundColor3 = Color3.fromRGB(210, 213, 217); B.Text = text:lower(); B.Font = Enum.Font.Gotham; B.TextColor3 = Color3.fromRGB(60, 60, 60); B.TextSize = 13; Instance.new("UICorner", B).CornerRadius = UDim.new(0, 10)
+            B.MouseButton1Click:Connect(cb)
+        end
+        function PageElements:Toggle(text, default, cb)
+            local TFrame = Instance.new("Frame", Page); TFrame.Size = UDim2.new(1, 0, 0, 38); TFrame.BackgroundColor3 = Color3.fromRGB(210, 213, 217); Instance.new("UICorner", TFrame).CornerRadius = UDim.new(0, 10)
+            local TText = Instance.new("TextLabel", TFrame); TText.Size = UDim2.new(1, -50, 1, 0); TText.Position = UDim2.fromOffset(12, 0); TText.BackgroundTransparency = 1; TText.Text = text:lower(); TText.Font = Enum.Font.Gotham; TText.TextColor3 = Color3.fromRGB(60, 60, 60); TText.TextSize = 13; TText.TextXAlignment = 0
+            local TBtn = Instance.new("TextButton", TFrame); TBtn.Size = UDim2.fromOffset(30, 18); TBtn.Position = UDim2.new(1, -42, 0.5, -9); TBtn.BackgroundColor3 = default and Color3.fromRGB(130, 200, 130) or Color3.fromRGB(180, 180, 180); TBtn.Text = ""; Instance.new("UICorner", TBtn).CornerRadius = UDim.new(1, 0)
+            local state = default
+            TBtn.MouseButton1Click:Connect(function() state = not state; TBtn.BackgroundColor3 = state and Color3.fromRGB(130, 200, 130) or Color3.fromRGB(180, 180, 180); cb(state) end)
+        end
+        function PageElements:Slider(text, min, max, default, cb)
+            local SFrame = Instance.new("Frame", Page); SFrame.Size = UDim2.new(1, 0, 0, 48); SFrame.BackgroundColor3 = Color3.fromRGB(210, 213, 217); Instance.new("UICorner", SFrame).CornerRadius = UDim.new(0, 10)
+            local Title = Instance.new("TextLabel", SFrame); Title.Position = UDim2.new(0, 12, 0, 8); Title.Size = UDim2.new(1, -50, 0, 12); Title.Text = text:lower(); Title.Font = Enum.Font.Gotham; Title.TextColor3 = Color3.fromRGB(80, 80, 80); Title.TextSize = 12; Title.BackgroundTransparency = 1; Title.TextXAlignment = 0
+            local Val = Instance.new("TextLabel", SFrame); Val.Position = UDim2.new(1, -40, 0, 8); Val.Size = UDim2.new(0, 30, 0, 12); Val.Text = tostring(default); Val.Font = Enum.Font.GothamBold; Val.TextColor3 = Color3.fromRGB(100, 100, 100); Val.TextSize = 12; Val.BackgroundTransparency = 1; Val.TextXAlignment = 1
+            local Bar = Instance.new("Frame", SFrame); Bar.Size = UDim2.new(1, -24, 0, 6); Bar.Position = UDim2.new(0, 12, 0, 32); Bar.BackgroundColor3 = Color3.fromRGB(180, 185, 190); Instance.new("UICorner", Bar).CornerRadius = UDim.new(0, 4)
+            local Fill = Instance.new("Frame", Bar); Fill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0); Fill.BackgroundColor3 = Color3.fromRGB(120, 130, 140); Instance.new("UICorner", Fill).CornerRadius = UDim.new(0, 4)
+            local function update(input)
+                local pos = math.clamp((input.Position.X - Bar.AbsolutePosition.X) / Bar.AbsoluteSize.X, 0, 1)
+                Fill.Size = UDim2.new(pos, 0, 1, 0); local v = math.floor(min + (max - min) * pos); Val.Text = tostring(v); cb(v)
+            end
+            Bar.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then local conn; conn = UIS.InputChanged:Connect(function(move) if UIS:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then update(move) else conn:Disconnect() end end) update(input) end end)
+        end
+        return PageElements
+    end
+
+    -- AUTO-GENERATE SETTINGS
+    local SetTab = Lib:CreateTab("settings")
+    for name, color in pairs(Themes) do
+        SetTab:Button(name, function()
+            for _, obj in pairs(self.ElementsToTheme) do
+                TweenService:Create(obj, TweenInfo.new(0.3), {BackgroundColor3 = color}):Play()
+            end
+        end)
+    end
+
+    return Lib
+end
+
+return Omni
