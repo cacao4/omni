@@ -67,7 +67,7 @@ function Omni:CreateWindow(title)
     Main.Position = UDim2.new(0.5, -260, 0.5, -200)
     Main.BackgroundColor3 = Color3.fromRGB(240, 242, 245)
     Main.Active = true
-    Main.ClipsDescendants = true -- THIS PREVENTS STUFF FROM SHOWING WHEN MINIMIZED
+    Main.ClipsDescendants = true
     Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 14)
 
     local Topbar = Instance.new("Frame", Main)
@@ -117,14 +117,10 @@ function Omni:CreateWindow(title)
     Sidebar.BackgroundColor3 = Color3.fromRGB(225, 228, 232)
     Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 10)
 
-    -- MINIMIZE LOGIC FIXED
     CreateControl("-", 0.3, function() 
         local isMin = Main.Size.Y.Offset < 100
         local targetSize = isMin and UDim2.fromOffset(520, 400) or UDim2.fromOffset(520, 58)
-        
         TweenService:Create(Main, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = targetSize}):Play()
-        
-        -- Toggle visibility of internals so they don't look weird during the tween
         task.delay(isMin and 0 or 0.1, function()
             Container.Visible = isMin
             Sidebar.Visible = isMin
@@ -169,6 +165,17 @@ function Omni:CreateWindow(title)
         local Layout = Instance.new("UIListLayout", Page)
         Layout.Padding = UDim.new(0, 8)
         Layout.SortOrder = Enum.SortOrder.LayoutOrder
+
+        -- NEW: BIG TEXT HEADER
+        local Header = Instance.new("TextLabel", Page)
+        Header.Size = UDim2.new(1, 0, 0, 40)
+        Header.BackgroundTransparency = 1
+        Header.Text = name:lower()
+        Header.Font = Enum.Font.GothamBold
+        Header.TextColor3 = Color3.fromRGB(50, 55, 60)
+        Header.TextSize = 24
+        Header.TextXAlignment = 0
+        Instance.new("UIPadding", Header).PaddingLeft = UDim.new(0, 5)
         
         local TabBtn = Instance.new("TextButton", Sidebar)
         TabBtn.Size = UDim2.new(0, 85, 0, 35)
