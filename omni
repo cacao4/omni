@@ -67,6 +67,7 @@ function Omni:CreateWindow(title)
     Main.Position = UDim2.new(0.5, -260, 0.5, -200)
     Main.BackgroundColor3 = Color3.fromRGB(240, 242, 245)
     Main.Active = true
+    Main.ClipsDescendants = true -- THIS PREVENTS STUFF FROM SHOWING WHEN MINIMIZED
     Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 14)
 
     local Topbar = Instance.new("Frame", Main)
@@ -103,10 +104,33 @@ function Omni:CreateWindow(title)
         btn.MouseButton1Click:Connect(callback)
     end
 
+    local Container = Instance.new("Frame", Main)
+    Container.Size = UDim2.new(0, 380, 0, 325)
+    Container.Position = UDim2.fromOffset(12, 60)
+    Container.BackgroundColor3 = Color3.fromRGB(225, 228, 232)
+    Container.Active = true
+    Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 10)
+
+    local Sidebar = Instance.new("Frame", Main)
+    Sidebar.Size = UDim2.new(0, 104, 0, 325)
+    Sidebar.Position = UDim2.fromOffset(404, 60)
+    Sidebar.BackgroundColor3 = Color3.fromRGB(225, 228, 232)
+    Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 10)
+
+    -- MINIMIZE LOGIC FIXED
     CreateControl("-", 0.3, function() 
-        local isMin = Main.Size.Y.Offset < 60
-        TweenService:Create(Main, TweenInfo.new(0.3), {Size = isMin and UDim2.fromOffset(520, 400) or UDim2.fromOffset(520, 55)}):Play()
+        local isMin = Main.Size.Y.Offset < 100
+        local targetSize = isMin and UDim2.fromOffset(520, 400) or UDim2.fromOffset(520, 58)
+        
+        TweenService:Create(Main, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = targetSize}):Play()
+        
+        -- Toggle visibility of internals so they don't look weird during the tween
+        task.delay(isMin and 0 or 0.1, function()
+            Container.Visible = isMin
+            Sidebar.Visible = isMin
+        end)
     end)
+    
     CreateControl("×", 0.8, function() self.Gui:Destroy() end)
 
     local dragging, dragStart, startPos
@@ -123,19 +147,6 @@ function Omni:CreateWindow(title)
     end)
     UIS.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
 
-    local Container = Instance.new("Frame", Main)
-    Container.Size = UDim2.new(0, 380, 0, 325)
-    Container.Position = UDim2.fromOffset(12, 60)
-    Container.BackgroundColor3 = Color3.fromRGB(225, 228, 232)
-    Container.Active = true
-    Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 10)
-
-    local Sidebar = Instance.new("Frame", Main)
-    Sidebar.Size = UDim2.new(0, 104, 0, 325)
-    Sidebar.Position = UDim2.fromOffset(404, 60)
-    Sidebar.BackgroundColor3 = Color3.fromRGB(225, 228, 232)
-    Instance.new("UICorner", Sidebar).CornerRadius = UDim.new(0, 10)
-    
     local SidebarList = Instance.new("UIListLayout", Sidebar)
     SidebarList.HorizontalAlignment = Enum.HorizontalAlignment.Center
     SidebarList.Padding = UDim.new(0, 8)
@@ -150,10 +161,10 @@ function Omni:CreateWindow(title)
         Page.Position = UDim2.fromOffset(10, 10)
         Page.BackgroundTransparency = 1
         Page.Visible = false
-        Page.ScrollBarThickness = 2 -- Added thin scrollbar so you can see it
+        Page.ScrollBarThickness = 2
         Page.ScrollBarImageColor3 = Color3.fromRGB(180, 180, 180)
         Page.CanvasSize = UDim2.new(0,0,0,0)
-        Page.AutomaticCanvasSize = Enum.AutomaticSize.Y -- THIS FIXES THE SLIDER ISSUE
+        Page.AutomaticCanvasSize = Enum.AutomaticSize.Y
         
         local Layout = Instance.new("UIListLayout", Page)
         Layout.Padding = UDim.new(0, 8)
