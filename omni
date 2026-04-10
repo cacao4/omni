@@ -23,7 +23,6 @@ function Omni.new()
     if CoreGui:FindFirstChild("Omni_UI") then CoreGui.Omni_UI:Destroy() end
     self.Gui = Instance.new("ScreenGui", CoreGui)
     self.Gui.Name = "Omni_UI"
-    self.ThemeColor = Themes["gray"]
     task.spawn(function()
         while task.wait(300) do self:Notify("enjoying ui?", "get it on rscripts", 5) end
     end)
@@ -51,7 +50,7 @@ end
 function Omni:ShowLoading(name)
     local L = Instance.new("Frame", self.Gui)
     L.Size = UDim2.fromOffset(300, 150); L.Position = UDim2.new(0.5, -150, 0.5, -75)
-    L.BackgroundColor3 = Color3.fromRGB(30,30,30); Instance.new("UICorner", L); L.ZIndex = 10
+    L.BackgroundColor3 = Color3.fromRGB(30,30,30); Instance.new("UICorner", L); L.ZIndex = 100
     local title = Instance.new("TextLabel", L)
     title.Size = UDim2.new(1,0,0,100); title.Text = name:lower(); title.TextSize = 40; title.TextColor3 = Color3.new(1,1,1); title.BackgroundTransparency = 1
     local omni = Instance.new("TextLabel", L)
@@ -65,24 +64,22 @@ function Omni:CreateWindow(title, keybind)
     Main.BackgroundColor3 = Color3.fromRGB(240, 242, 245); Main.ClipsDescendants = true
     Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
     local Topbar = Instance.new("Frame", Main)
-    Topbar.Size = UDim2.new(1, -20, 0, 35); Topbar.Position = UDim2.fromOffset(10, 10)
-    Topbar.BackgroundColor3 = self.ThemeColor; Instance.new("UICorner", Topbar)
+    Topbar.Name = "Topbar"; Topbar.Size = UDim2.new(1, -20, 0, 35); Topbar.Position = UDim2.fromOffset(10, 10)
+    Topbar.BackgroundColor3 = Themes["gray"]; Instance.new("UICorner", Topbar)
     local TitleLabel = Instance.new("TextLabel", Topbar)
     TitleLabel.Size = UDim2.new(1, -80, 1, 0); TitleLabel.Position = UDim2.fromOffset(10, 0)
     TitleLabel.Text = title:lower(); TitleLabel.Font = Enum.Font.GothamMedium; TitleLabel.BackgroundTransparency = 1; TitleLabel.TextXAlignment = 0
     local Container = Instance.new("Frame", Main)
-    Container.Size = UDim2.new(0, 385, 0, 335); Container.Position = UDim2.fromOffset(10, 55)
+    Container.Name = "Container"; Container.Size = UDim2.new(0, 385, 0, 335); Container.Position = UDim2.fromOffset(10, 55)
     Container.BackgroundColor3 = Color3.fromRGB(225, 228, 232); Instance.new("UICorner", Container)
     local Sidebar = Instance.new("Frame", Main)
-    Sidebar.Size = UDim2.new(0, 105, 0, 335); Sidebar.Position = UDim2.fromOffset(405, 55)
+    Sidebar.Name = "Sidebar"; Sidebar.Size = UDim2.new(0, 105, 0, 335); Sidebar.Position = UDim2.fromOffset(405, 55)
     Sidebar.BackgroundColor3 = Color3.fromRGB(225, 228, 232); Instance.new("UICorner", Sidebar)
-    local SidebarList = Instance.new("UIListLayout", Sidebar); SidebarList.Padding = UDim.new(0, 5); SidebarList.HorizontalAlignment = "Center"
-    Instance.new("UIPadding", Sidebar).PaddingTop = UDim.new(0, 5)
     local Close = Instance.new("TextButton", Topbar)
-    Close.Size = UDim2.fromOffset(25, 25); Close.Position = UDim2.new(1, -30, 0.5, -12); Close.Text = "x"; Close.BackgroundColor3 = Color3.fromRGB(200, 80, 80); Close.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", Close).CornerRadius = UDim.new(1, 0)
+    Close.Size = UDim2.fromOffset(25, 25); Close.Position = UDim2.new(1, -30, 0.5, -12); Close.Text = "x"; Close.ZIndex = 5; Close.BackgroundColor3 = Color3.fromRGB(200, 80, 80); Close.TextColor3 = Color3.new(1,1,1); Instance.new("UICorner", Close).CornerRadius = UDim.new(1, 0)
     Close.MouseButton1Click:Connect(function() self.Gui:Destroy() end)
     local Min = Instance.new("TextButton", Topbar)
-    Min.Size = UDim2.fromOffset(25, 25); Min.Position = UDim2.new(1, -60, 0.5, -12); Min.Text = "-"; Min.BackgroundColor3 = Color3.fromRGB(200, 200, 200); Instance.new("UICorner", Min).CornerRadius = UDim.new(1, 0)
+    Min.Size = UDim2.fromOffset(25, 25); Min.Position = UDim2.new(1, -60, 0.5, -12); Min.Text = "-"; Min.ZIndex = 5; Min.BackgroundColor3 = Color3.fromRGB(200, 200, 200); Instance.new("UICorner", Min).CornerRadius = UDim.new(1, 0)
     local isMin = false
     Min.MouseButton1Click:Connect(function() isMin = not isMin Main:TweenSize(isMin and UDim2.fromOffset(520, 55) or UDim2.fromOffset(520, 400), "Out", "Quart", 0.3, true) end)
     local dragStart, startPos
@@ -117,15 +114,15 @@ function Omni:CreateWindow(title, keybind)
         end
         return Elements
     end
-    local function SetColor(c)
+    local function ForceColor(c)
         Topbar.BackgroundColor3 = c
         local h,s,v = c:ToHSV()
-        local bg = Color3.fromHSV(h, s*0.2, v*0.95)
+        local bg = Color3.fromHSV(h, s*0.15, v*0.92)
         Container.BackgroundColor3 = bg
         Sidebar.BackgroundColor3 = bg
     end
     local Settings = Lib:CreateTab("settings")
-    for n, c in pairs(Themes) do Settings:Button(n, function() SetColor(c) end) end
+    for n, c in pairs(Themes) do Settings:Button(n, function() ForceColor(c) end) end
     return Lib
 end
 return Omni
