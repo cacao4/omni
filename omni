@@ -6,6 +6,16 @@ local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
 
+
+Omni.Themes = {
+    Green = Color3.fromRGB(130, 200, 130),
+    Blue = Color3.fromRGB(100, 150, 255),
+    Red = Color3.fromRGB(255, 100, 100),
+    Purple = Color3.fromRGB(180, 100, 255),
+    Orange = Color3.fromRGB(255, 150, 80),
+    Pink = Color3.fromRGB(255, 100, 200)
+}
+
 function Omni.new()
     local self = setmetatable({}, Omni)
     if CoreGui:FindFirstChild("Omni_UI") then CoreGui.Omni_UI:Destroy() end
@@ -13,6 +23,9 @@ function Omni.new()
     self.Gui.Name = "Omni_UI"
     self.FirstTab = nil
     self.Enabled = true
+
+    self.ThemeColor = Omni.Themes.Green
+    self.ActiveToggles = {}
     
 
     self.NotifContainer = Instance.new("Frame", self.Gui)
@@ -25,6 +38,20 @@ function Omni.new()
     Instance.new("UIPadding", self.NotifContainer).PaddingBottom = UDim.new(0, 20)
     
     return self
+end
+
+function Omni:SetTheme(colorConfig)
+    self.ThemeColor = typeof(colorConfig) == "Color3" and colorConfig or (Omni.Themes[colorConfig] or Omni.Themes.Green)
+    
+
+    for indicator, getState in pairs(self.ActiveToggles) do
+        if getState() then
+            TweenService:Create(indicator, TweenInfo.new(0.3), {BackgroundColor3 = self.ThemeColor}):Play()
+            if indicator:FindFirstChild("UIStroke") then
+                TweenService:Create(indicator.UIStroke, TweenInfo.new(0.3), {Color = self.ThemeColor}):Play()
+            end
+        end
+    end
 end
 
 function Omni:Notify(title, text, duration)
@@ -72,7 +99,6 @@ function Omni:CreateWindow(title, keybind)
     Main.Active = true
     Main.ClipsDescendants = true
     Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 14)
-
 
     UIS.InputBegan:Connect(function(input, gpe)
         if not gpe and input.KeyCode == (keybind or Enum.KeyCode.RightControl) then
@@ -139,6 +165,7 @@ function Omni:CreateWindow(title, keybind)
     end)
     
     CreateControl("×", 0.8, function() self.Gui:Destroy() end)
+
 
     local dragging, dragStart, startPos
     Topbar.InputBegan:Connect(function(input)
@@ -234,17 +261,38 @@ function Omni:CreateWindow(title, keybind)
             TText.TextSize = 13
             TText.TextXAlignment = 0
 
-            local TButton = Instance.new("TextButton", TFrame)
-            TButton.Size = UDim2.fromOffset(30, 18)
-            TButton.Position = UDim2.new(1, -42, 0.5, -9)
-            TButton.BackgroundColor3 = default and Color3.fromRGB(130, 200, 130) or Color3.fromRGB(180, 180, 180)
-            TButton.Text = ""
-            Instance.new("UICorner", TButton).CornerRadius = UDim.new(1, 0)
 
+            local Indicator = Instance.new("Frame", TFrame)
+            Indicator.Size = UDim2.fromOffset(12, 12)
+            Indicator.Position = UDim2.new(1, -26, 0.5, -6)
+            Instance.new("UICorner", Indicator).CornerRadius = UDim.new(1, 0)
+            
+            local GlowStroke = Instance.new("UIStroke", Indicator)
+            GlowStroke.Thickness = 2
+            
             local state = default
-            TButton.MouseButton1Click:Connect(function()
+            
+            local function UpdateVisuals()
+                if state then
+                    TweenService:Create(Indicator, TweenInfo.new(0.2), {BackgroundColor3 = self.ThemeColor}):Play()
+                    TweenService:Create(GlowStroke, TweenInfo.new(0.2), {Color = self.ThemeColor, Transparency = 0}):Play()
+                else
+                    TweenService:Create(Indicator, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(180, 180, 180)}):Play()
+                    TweenService:Create(GlowStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(160, 160, 160), Transparency = 0.8}):Play()
+                end
+            end
+            
+            UpdateVisuals()
+            self.ActiveToggles[Indicator] = function() return state end
+
+            local Hitbox = Instance.new("TextButton", TFrame)
+            Hitbox.Size = UDim2.new(1, 0, 1, 0)
+            Hitbox.BackgroundTransparency = 1
+            Hitbox.Text = ""
+            
+            Hitbox.MouseButton1Click:Connect(function()
                 state = not state
-                TButton.BackgroundColor3 = state and Color3.fromRGB(130, 200, 130) or Color3.fromRGB(180, 180, 180)
+                UpdateVisuals()
                 cb(state)
             end)
         end
