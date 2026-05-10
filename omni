@@ -182,7 +182,7 @@ function Omni:CreateWindow(title, keybind)
         Header.Text = name:lower()
         Header.Font = Enum.Font.GothamBold
         Header.TextColor3 = Color3.fromRGB(50, 55, 60)
-        Header.TextSize = 24
+        Header.TextSize = 40
         Header.TextXAlignment = 0
         Header.LayoutOrder = -1 
         Instance.new("UIPadding", Header).PaddingLeft = UDim.new(0, 5)
