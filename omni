@@ -182,7 +182,7 @@ function Omni:CreateWindow(title, keybind)
         Header.Text = name:lower()
         Header.Font = Enum.Font.GothamBold
         Header.TextColor3 = Color3.fromRGB(50, 55, 60)
-        Header.TextSize = 40
+        Header.TextSize = 25
         Header.TextXAlignment = 0
         Header.LayoutOrder = -1 
         Instance.new("UIPadding", Header).PaddingLeft = UDim.new(0, 5)
@@ -213,7 +213,7 @@ function Omni:CreateWindow(title, keybind)
             B.Text = text:lower()
             B.Font = Enum.Font.Gotham
             B.TextColor3 = Color3.fromRGB(60, 60, 60)
-            B.TextSize = 13
+            B.TextSize = 20
             Instance.new("UICorner", B).CornerRadius = UDim.new(0, 10)
             B.MouseButton1Click:Connect(cb)
         end
